@@ -3,126 +3,249 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alex K. Chen</title>
+    <title>Alex K. Chen - Home Page</title>
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
       body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        font-family: Georgia, 'Times New Roman', Times, serif;
         line-height: 1.6;
         color: #333;
-        background: #f5f5f5;
+        background: #fff;
+        margin: 0;
+        padding: 0;
       }
 
       .container {
-        max-width: 800px;
+        display: flex;
+        max-width: 1200px;
         margin: 0 auto;
-        padding: 40px 20px;
       }
 
-      header {
-        background: white;
-        padding: 60px 40px;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        margin-bottom: 30px;
-        text-align: center;
+      .sidebar {
+        width: 200px;
+        background: #f0f0f0;
+        padding: 20px;
+        min-height: 100vh;
+        border-right: 1px solid #ccc;
+      }
+
+      .sidebar h2 {
+        font-size: 1.2em;
+        margin-bottom: 15px;
+        color: #003366;
+      }
+
+      .sidebar ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .sidebar li {
+        margin-bottom: 10px;
+      }
+
+      .sidebar a {
+        color: #003366;
+        text-decoration: none;
+        font-size: 0.95em;
+      }
+
+      .sidebar a:hover {
+        text-decoration: underline;
+      }
+
+      .content {
+        flex: 1;
+        padding: 30px 40px;
       }
 
       h1 {
-        font-size: 2.5em;
-        margin-bottom: 10px;
-        color: #2c3e50;
-      }
-
-      .tagline {
-        font-size: 1.2em;
-        color: #7f8c8d;
-        margin-bottom: 20px;
-      }
-
-      section {
-        background: white;
-        padding: 40px;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        margin-bottom: 30px;
-      }
-
-      h2 {
-        color: #2c3e50;
-        margin-bottom: 20px;
-        border-bottom: 2px solid #3498db;
+        font-size: 2em;
+        color: #003366;
+        margin-bottom: 5px;
+        border-bottom: 2px solid #003366;
         padding-bottom: 10px;
       }
 
-      p {
+      h2 {
+        font-size: 1.5em;
+        color: #003366;
+        margin-top: 30px;
         margin-bottom: 15px;
       }
 
-      .links {
-        display: flex;
-        gap: 20px;
-        justify-content: center;
-        flex-wrap: wrap;
+      h3 {
+        font-size: 1.2em;
+        color: #333;
+        margin-top: 20px;
+        margin-bottom: 10px;
+      }
+
+      p {
+        margin-bottom: 12px;
+        text-align: justify;
+      }
+
+      .subtitle {
+        font-style: italic;
+        color: #666;
+        margin-bottom: 20px;
+      }
+
+      ul.publications {
+        list-style: none;
+        padding-left: 0;
+      }
+
+      ul.publications li {
+        margin-bottom: 15px;
+        padding-left: 20px;
+        text-indent: -20px;
+      }
+
+      ul.interests {
+        margin-left: 20px;
+      }
+
+      ul.interests li {
+        margin-bottom: 8px;
+      }
+
+      .contact-info {
+        background: #f9f9f9;
+        padding: 15px;
+        border-left: 3px solid #003366;
+        margin: 20px 0;
       }
 
       a {
-        color: #3498db;
-        text-decoration: none;
-        padding: 10px 20px;
-        border: 2px solid #3498db;
-        border-radius: 5px;
-        transition: all 0.3s ease;
+        color: #003366;
       }
 
-      a:hover {
-        background: #3498db;
-        color: white;
+      a:visited {
+        color: #551a8b;
       }
 
-      footer {
-        text-align: center;
-        padding: 20px;
-        color: #7f8c8d;
+      hr {
+        border: 0;
+        border-top: 1px solid #ccc;
+        margin: 25px 0;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          flex-direction: column;
+        }
+
+        .sidebar {
+          width: 100%;
+          min-height: auto;
+          border-right: none;
+          border-bottom: 1px solid #ccc;
+        }
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <header>
+      <div class="sidebar">
+        <h2>Navigation</h2>
+        <ul>
+          <li><a href="#about">About</a></li>
+          <li><a href="#research">Research</a></li>
+          <li><a href="#publications">Publications</a></li>
+          <li><a href="#teaching">Teaching</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+
+        <h2 style="margin-top: 30px;">Links</h2>
+        <ul>
+          <li><a href="#">CV (PDF)</a></li>
+          <li><a href="#">Google Scholar</a></li>
+          <li><a href="#">GitHub</a></li>
+          <li><a href="#">ORCID</a></li>
+        </ul>
+      </div>
+
+      <div class="content">
         <h1>Alex K. Chen</h1>
-        <p class="tagline">Thinker. Builder. Explorer.</p>
-      </header>
+        <p class="subtitle">Researcher | Educator | Scholar</p>
 
-      <section>
-        <h2>About</h2>
-        <p>Welcome to my personal space on the web. I'm passionate about learning, creating, and exploring new ideas.</p>
-        <p>This site serves as a hub for my thoughts, projects, and connections.</p>
-      </section>
+        <section id="about">
+          <h2>About</h2>
+          <p>Welcome to my academic homepage. I am a researcher and educator with interests spanning multiple disciplines including computer science, data science, and interdisciplinary studies.</p>
 
-      <section>
-        <h2>Interests</h2>
-        <p>I'm curious about technology, science, philosophy, and the intersections between them. Always learning, always questioning.</p>
-      </section>
+          <p>My work focuses on the intersection of theory and practice, with an emphasis on developing novel approaches to complex problems. I am committed to both advancing knowledge through research and fostering the next generation of scholars through teaching.</p>
+        </section>
 
-      <section>
-        <h2>Connect</h2>
-        <div class="links">
-          <a href="mailto:hello@alexkchen.com">Email</a>
-          <a href="https://github.com">GitHub</a>
-          <a href="https://twitter.com">Twitter</a>
-          <a href="https://linkedin.com">LinkedIn</a>
-        </div>
-      </section>
+        <section id="research">
+          <h2>Research Interests</h2>
+          <ul class="interests">
+            <li>Machine Learning and Artificial Intelligence</li>
+            <li>Data Science and Statistical Methods</li>
+            <li>Computational Methods and Algorithms</li>
+            <li>Interdisciplinary Applications of Technology</li>
+            <li>Scientific Computing and Visualization</li>
+          </ul>
 
-      <footer>
-        <p>&copy; 2025 Alex K. Chen</p>
-      </footer>
+          <h3>Current Projects</h3>
+          <p>I am currently working on several research projects involving large-scale data analysis, development of novel algorithms, and applications to real-world problems. My research is supported by various grants and collaborative partnerships.</p>
+        </section>
+
+        <hr>
+
+        <section id="publications">
+          <h2>Selected Publications</h2>
+          <ul class="publications">
+            <li>Chen, A.K. et al. (2024). "Novel Approaches to Data Analysis." <i>Journal of Computational Research</i>, 45(3), 123-145.</li>
+
+            <li>Chen, A.K. and Smith, J. (2023). "Machine Learning Applications in Modern Research." <i>Proceedings of the International Conference on AI</i>, pp. 78-92.</li>
+
+            <li>Chen, A.K. (2023). "Computational Methods for Large-Scale Problems." <i>ACM Transactions on Computing</i>, 12(2), 234-256.</li>
+
+            <li>Chen, A.K., Johnson, M., and Williams, R. (2022). "Interdisciplinary Perspectives on Technology." <i>Science Today</i>, 89(4), 445-467.</li>
+          </ul>
+
+          <p>For a complete list of publications, please see my <a href="#">Google Scholar profile</a> or <a href="#">CV</a>.</p>
+        </section>
+
+        <hr>
+
+        <section id="teaching">
+          <h2>Teaching</h2>
+
+          <h3>Current Courses</h3>
+          <ul>
+            <li><strong>Introduction to Data Science</strong> - Undergraduate level</li>
+            <li><strong>Advanced Machine Learning</strong> - Graduate level</li>
+          </ul>
+
+          <h3>Previous Courses</h3>
+          <ul>
+            <li>Algorithms and Data Structures</li>
+            <li>Statistical Methods</li>
+            <li>Research Methods and Design</li>
+          </ul>
+        </section>
+
+        <hr>
+
+        <section id="contact">
+          <h2>Contact Information</h2>
+          <div class="contact-info">
+            <p><strong>Email:</strong> akchen [at] example.edu</p>
+            <p><strong>Office:</strong> Building Name, Room 123</p>
+            <p><strong>Phone:</strong> +1 (555) 123-4567</p>
+            <p><strong>Office Hours:</strong> Tuesday and Thursday, 2:00-4:00 PM, or by appointment</p>
+          </div>
+        </section>
+
+        <hr>
+
+        <p style="font-size: 0.9em; color: #666;">
+          <i>Last updated: November 2025</i>
+        </p>
+      </div>
     </div>
   </body>
 </html>
