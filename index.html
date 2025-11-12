@@ -177,6 +177,86 @@
         background: #004488;
       }
 
+      .quiz-container {
+        max-width: 700px;
+        margin: 0 auto;
+      }
+
+      .quiz-question {
+        background: white;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        border-left: 4px solid #003366;
+      }
+
+      .quiz-question h4 {
+        margin-top: 0;
+        color: #003366;
+        font-size: 1em;
+      }
+
+      .quiz-options {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 15px;
+      }
+
+      .quiz-options label {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        padding: 10px;
+        border-radius: 3px;
+        transition: background 0.2s;
+      }
+
+      .quiz-options label:hover {
+        background: #f0f0f0;
+      }
+
+      .quiz-options input[type="radio"] {
+        margin-right: 10px;
+      }
+
+      .quiz-result {
+        background: #e8f4f8;
+        padding: 20px;
+        border-radius: 5px;
+        border-left: 4px solid #003366;
+        margin-top: 20px;
+      }
+
+      .quiz-result h3 {
+        margin-top: 0;
+        color: #003366;
+      }
+
+      .trait-bar {
+        margin: 15px 0;
+      }
+
+      .trait-bar-label {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+        font-size: 0.9em;
+      }
+
+      .trait-bar-container {
+        background: #ddd;
+        height: 20px;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      .trait-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #003366, #0066cc);
+        transition: width 0.5s ease;
+      }
+
       @media (max-width: 768px) {
         .container {
           flex-direction: column;
@@ -199,6 +279,7 @@
           <li><a href="#about">About</a></li>
           <li><a href="#research">Research</a></li>
           <li><a href="#applet">Interactive Demo</a></li>
+          <li><a href="#quiz">Personality Quiz</a></li>
           <li><a href="#publications">Publications</a></li>
           <li><a href="#teaching">Teaching</a></li>
           <li><a href="#contact">Contact</a></li>
@@ -265,6 +346,139 @@
             <p style="text-align: center; font-size: 0.9em; margin-top: 15px;">
               <strong>Instructions:</strong> Adjust the regularization parameter ε and click "Run Sinkhorn" to see how it affects the optimal transport plan. Lower values produce sparser solutions, while higher values produce smoother distributions.
             </p>
+          </div>
+        </section>
+
+        <hr>
+
+        <section id="quiz">
+          <h2>Personality Inventory Quiz</h2>
+          <p>This interactive personality inventory assesses five major dimensions of personality: Openness, Conscientiousness, Extraversion, Agreeableness, and Neuroticism. Answer the questions below to see your personality profile.</p>
+
+          <div class="applet-container">
+            <div class="quiz-container">
+              <form id="personalityQuiz">
+                <div class="quiz-question">
+                  <h4>1. I enjoy exploring new ideas and experiences.</h4>
+                  <div class="quiz-options">
+                    <label><input type="radio" name="q1" value="5" required> Strongly Agree</label>
+                    <label><input type="radio" name="q1" value="4"> Agree</label>
+                    <label><input type="radio" name="q1" value="3"> Neutral</label>
+                    <label><input type="radio" name="q1" value="2"> Disagree</label>
+                    <label><input type="radio" name="q1" value="1"> Strongly Disagree</label>
+                  </div>
+                </div>
+
+                <div class="quiz-question">
+                  <h4>2. I am always well-prepared and organized.</h4>
+                  <div class="quiz-options">
+                    <label><input type="radio" name="q2" value="5" required> Strongly Agree</label>
+                    <label><input type="radio" name="q2" value="4"> Agree</label>
+                    <label><input type="radio" name="q2" value="3"> Neutral</label>
+                    <label><input type="radio" name="q2" value="2"> Disagree</label>
+                    <label><input type="radio" name="q2" value="1"> Strongly Disagree</label>
+                  </div>
+                </div>
+
+                <div class="quiz-question">
+                  <h4>3. I feel energized when around other people.</h4>
+                  <div class="quiz-options">
+                    <label><input type="radio" name="q3" value="5" required> Strongly Agree</label>
+                    <label><input type="radio" name="q3" value="4"> Agree</label>
+                    <label><input type="radio" name="q3" value="3"> Neutral</label>
+                    <label><input type="radio" name="q3" value="2"> Disagree</label>
+                    <label><input type="radio" name="q3" value="1"> Strongly Disagree</label>
+                  </div>
+                </div>
+
+                <div class="quiz-question">
+                  <h4>4. I am sympathetic and concerned for others.</h4>
+                  <div class="quiz-options">
+                    <label><input type="radio" name="q4" value="5" required> Strongly Agree</label>
+                    <label><input type="radio" name="q4" value="4"> Agree</label>
+                    <label><input type="radio" name="q4" value="3"> Neutral</label>
+                    <label><input type="radio" name="q4" value="2"> Disagree</label>
+                    <label><input type="radio" name="q4" value="1"> Strongly Disagree</label>
+                  </div>
+                </div>
+
+                <div class="quiz-question">
+                  <h4>5. I often worry about things.</h4>
+                  <div class="quiz-options">
+                    <label><input type="radio" name="q5" value="5" required> Strongly Agree</label>
+                    <label><input type="radio" name="q5" value="4"> Agree</label>
+                    <label><input type="radio" name="q5" value="3"> Neutral</label>
+                    <label><input type="radio" name="q5" value="2"> Disagree</label>
+                    <label><input type="radio" name="q5" value="1"> Strongly Disagree</label>
+                  </div>
+                </div>
+
+                <div class="quiz-question">
+                  <h4>6. I have a vivid imagination and love abstract concepts.</h4>
+                  <div class="quiz-options">
+                    <label><input type="radio" name="q6" value="5" required> Strongly Agree</label>
+                    <label><input type="radio" name="q6" value="4"> Agree</label>
+                    <label><input type="radio" name="q6" value="3"> Neutral</label>
+                    <label><input type="radio" name="q6" value="2"> Disagree</label>
+                    <label><input type="radio" name="q6" value="1"> Strongly Disagree</label>
+                  </div>
+                </div>
+
+                <div class="quiz-question">
+                  <h4>7. I pay attention to details and follow through on tasks.</h4>
+                  <div class="quiz-options">
+                    <label><input type="radio" name="q7" value="5" required> Strongly Agree</label>
+                    <label><input type="radio" name="q7" value="4"> Agree</label>
+                    <label><input type="radio" name="q7" value="3"> Neutral</label>
+                    <label><input type="radio" name="q7" value="2"> Disagree</label>
+                    <label><input type="radio" name="q7" value="1"> Strongly Disagree</label>
+                  </div>
+                </div>
+
+                <div class="quiz-question">
+                  <h4>8. I enjoy being the center of attention in social situations.</h4>
+                  <div class="quiz-options">
+                    <label><input type="radio" name="q8" value="5" required> Strongly Agree</label>
+                    <label><input type="radio" name="q8" value="4"> Agree</label>
+                    <label><input type="radio" name="q8" value="3"> Neutral</label>
+                    <label><input type="radio" name="q8" value="2"> Disagree</label>
+                    <label><input type="radio" name="q8" value="1"> Strongly Disagree</label>
+                  </div>
+                </div>
+
+                <div class="quiz-question">
+                  <h4>9. I trust others and assume good intentions.</h4>
+                  <div class="quiz-options">
+                    <label><input type="radio" name="q9" value="5" required> Strongly Agree</label>
+                    <label><input type="radio" name="q9" value="4"> Agree</label>
+                    <label><input type="radio" name="q9" value="3"> Neutral</label>
+                    <label><input type="radio" name="q9" value="2"> Disagree</label>
+                    <label><input type="radio" name="q9" value="1"> Strongly Disagree</label>
+                  </div>
+                </div>
+
+                <div class="quiz-question">
+                  <h4>10. I tend to feel anxious or stressed frequently.</h4>
+                  <div class="quiz-options">
+                    <label><input type="radio" name="q10" value="5" required> Strongly Agree</label>
+                    <label><input type="radio" name="q10" value="4"> Agree</label>
+                    <label><input type="radio" name="q10" value="3"> Neutral</label>
+                    <label><input type="radio" name="q10" value="2"> Disagree</label>
+                    <label><input type="radio" name="q10" value="1"> Strongly Disagree</label>
+                  </div>
+                </div>
+
+                <div class="controls">
+                  <button type="submit">Calculate Results</button>
+                  <button type="button" id="resetQuiz">Reset Quiz</button>
+                </div>
+              </form>
+
+              <div id="quizResults" style="display: none;" class="quiz-result">
+                <h3>Your Personality Profile</h3>
+                <div id="resultsContent"></div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -488,6 +702,131 @@
       // Initialize on load
       initialize();
       visualize();
+
+      // Personality Quiz Logic
+      const quizForm = document.getElementById('personalityQuiz');
+      const quizResults = document.getElementById('quizResults');
+      const resultsContent = document.getElementById('resultsContent');
+      const resetQuizBtn = document.getElementById('resetQuiz');
+
+      // Question mappings to traits
+      const questionTraits = {
+        q1: 'openness',
+        q2: 'conscientiousness',
+        q3: 'extraversion',
+        q4: 'agreeableness',
+        q5: 'neuroticism',
+        q6: 'openness',
+        q7: 'conscientiousness',
+        q8: 'extraversion',
+        q9: 'agreeableness',
+        q10: 'neuroticism'
+      };
+
+      const traitDescriptions = {
+        openness: {
+          name: 'Openness to Experience',
+          high: 'You are imaginative, creative, and open to new experiences.',
+          low: 'You prefer routine and familiar experiences.'
+        },
+        conscientiousness: {
+          name: 'Conscientiousness',
+          high: 'You are organized, responsible, and reliable.',
+          low: 'You are spontaneous and flexible.'
+        },
+        extraversion: {
+          name: 'Extraversion',
+          high: 'You are outgoing, energetic, and enjoy social interactions.',
+          low: 'You are reserved and prefer solitude or small groups.'
+        },
+        agreeableness: {
+          name: 'Agreeableness',
+          high: 'You are compassionate, cooperative, and trusting.',
+          low: 'You are analytical and skeptical.'
+        },
+        neuroticism: {
+          name: 'Emotional Stability',
+          high: 'You may experience more emotional variability.',
+          low: 'You are calm and emotionally stable.',
+          reverse: true
+        }
+      };
+
+      quizForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        // Calculate scores
+        const scores = {
+          openness: 0,
+          conscientiousness: 0,
+          extraversion: 0,
+          agreeableness: 0,
+          neuroticism: 0
+        };
+
+        const counts = {
+          openness: 0,
+          conscientiousness: 0,
+          extraversion: 0,
+          agreeableness: 0,
+          neuroticism: 0
+        };
+
+        // Collect responses
+        for (let i = 1; i <= 10; i++) {
+          const answer = document.querySelector(`input[name="q${i}"]:checked`);
+          if (answer) {
+            const trait = questionTraits[`q${i}`];
+            scores[trait] += parseInt(answer.value);
+            counts[trait]++;
+          }
+        }
+
+        // Calculate percentages
+        const percentages = {};
+        for (let trait in scores) {
+          percentages[trait] = (scores[trait] / (counts[trait] * 5)) * 100;
+        }
+
+        // Display results
+        displayResults(percentages);
+        quizResults.style.display = 'block';
+        quizResults.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
+
+      function displayResults(percentages) {
+        let html = '';
+
+        for (let trait in percentages) {
+          const percent = percentages[trait];
+          const info = traitDescriptions[trait];
+          const isHigh = percent > 60;
+          const description = info.reverse ?
+            (isHigh ? info.high : info.low) :
+            (isHigh ? info.high : info.low);
+
+          html += `
+            <div class="trait-bar">
+              <div class="trait-bar-label">
+                <strong>${info.name}</strong>
+                <span>${percent.toFixed(0)}%</span>
+              </div>
+              <div class="trait-bar-container">
+                <div class="trait-bar-fill" style="width: ${percent}%"></div>
+              </div>
+              <p style="margin-top: 5px; font-size: 0.9em; color: #555;">${description}</p>
+            </div>
+          `;
+        }
+
+        resultsContent.innerHTML = html;
+      }
+
+      resetQuizBtn.addEventListener('click', function() {
+        quizForm.reset();
+        quizResults.style.display = 'none';
+        window.scrollTo({ top: document.getElementById('quiz').offsetTop - 100, behavior: 'smooth' });
+      });
     </script>
   </body>
 </html>
