@@ -2,67 +2,127 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <title>home of Joe Ketty</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://unpkg.com/mvp.css">
+    <title>Alex K. Chen</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background: #f5f5f5;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 40px 20px;
+      }
+
+      header {
+        background: white;
+        padding: 60px 40px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+        text-align: center;
+      }
+
+      h1 {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+        color: #2c3e50;
+      }
+
+      .tagline {
+        font-size: 1.2em;
+        color: #7f8c8d;
+        margin-bottom: 20px;
+      }
+
+      section {
+        background: white;
+        padding: 40px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+      }
+
+      h2 {
+        color: #2c3e50;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #3498db;
+        padding-bottom: 10px;
+      }
+
+      p {
+        margin-bottom: 15px;
+      }
+
+      .links {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      a {
+        color: #3498db;
+        text-decoration: none;
+        padding: 10px 20px;
+        border: 2px solid #3498db;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+      }
+
+      a:hover {
+        background: #3498db;
+        color: white;
+      }
+
+      footer {
+        text-align: center;
+        padding: 20px;
+        color: #7f8c8d;
+      }
+    </style>
   </head>
   <body>
-    <main>
-      <article>
-        <p>My name is <strong>Joe Ketty</strong>. I love cats 😺</p>
-        <p>I got my first cat when I was 2.</p>
-        <p>You can find images of all of my cats <a href="https://placekitten.com/">here</a>.</p>
-      </article>
-      <hr>
+    <div class="container">
+      <header>
+        <h1>Alex K. Chen</h1>
+        <p class="tagline">Thinker. Builder. Explorer.</p>
+      </header>
+
       <section>
-        <header>
-          <h2>meet my cat fam</h2>
-        </header>
-        <aside>
-          <img alt="an image of a cat" src="img/200.jpg" height="150">
-          <h3><a href="http://example.com/">Chloe's Instagram</a></h3>
-          <p>
-            <blockquote>
-              "The smallest feline is a masterpiece."
-              <footer>- Leonardo da Vinci</footer>
-            </blockquote>
-          </p>
-        </aside>
-        <aside>
-          <img alt="an image of a cat" src="img/225.jpg" height="150">
-          <h3><a href="http://example.com/">Jack's Twitter</a></h3>
-          <p>
-            <blockquote>
-              "A man who carries a cat by the tail learns something he can learn in no other way."
-              <footer>- Mark Twain</footer>
-            </blockquote>
-          </p>
-        </aside>
-        <aside>
-          <img alt="an image of a cat" src="img/250.jpg" height="150">
-          <h3><a href="http://example.com/">Luna's Facebook</a></h3>
-          <p>
-            <blockquote>
-              "Time spent with cats is never wasted."
-              <footer>- Sigmund Freud</footer>
-            </blockquote>
-          </p>
-        </aside>
+        <h2>About</h2>
+        <p>Welcome to my personal space on the web. I'm passionate about learning, creating, and exploring new ideas.</p>
+        <p>This site serves as a hub for my thoughts, projects, and connections.</p>
       </section>
-      <hr>
-      <article>
-        <p><strong>Important things you should know about cats:</strong></p>
-        <ul>
-          <li><a href="https://www.petfinder.com/cats/living-with-your-cat/how-to-play-cat-9-fun-ways/">How to Play with Your Cat in 9 Fun Ways</a></li>
-          <li><a href="https://www.guinnessworldrecords.com/world-records/largest-living-cat#:~:text=The%20largest%20living%20cat%20is,418.2%20kg%20(922%20lb).">The biggest at in the world</a></li>
-          <li><a href="https://www.rspcapetinsurance.org.au/pet-care/cat-care/grooming-your-cat">The ultimate guide to grooming your cat</a></li>
-        </ul>
-      </article>
+
+      <section>
+        <h2>Interests</h2>
+        <p>I'm curious about technology, science, philosophy, and the intersections between them. Always learning, always questioning.</p>
+      </section>
+
+      <section>
+        <h2>Connect</h2>
+        <div class="links">
+          <a href="mailto:hello@alexkchen.com">Email</a>
+          <a href="https://github.com">GitHub</a>
+          <a href="https://twitter.com">Twitter</a>
+          <a href="https://linkedin.com">LinkedIn</a>
+        </div>
+      </section>
+
       <footer>
-        <section>
-          <small>built with ❤️  using <a href="https://andybrewer.github.io/mvp/">mvp.css</a> &bull; <a href=https://github.com/radekosmulski/personal-site>fork on github</a> and build your own site</small>
-        </section>
+        <p>&copy; 2025 Alex K. Chen</p>
       </footer>
-    </main>
+    </div>
   </body>
 </html>
