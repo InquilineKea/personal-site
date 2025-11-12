@@ -147,6 +147,12 @@
         background: white;
       }
 
+      #personalityChart {
+        max-width: 400px;
+        margin: 20px auto;
+        display: block;
+      }
+
       .controls {
         text-align: center;
         margin: 15px 0;
@@ -476,6 +482,7 @@
 
               <div id="quizResults" style="display: none;" class="quiz-result">
                 <h3>Your Personality Profile</h3>
+                <canvas id="personalityChart" width="400" height="400"></canvas>
                 <div id="resultsContent"></div>
               </div>
             </div>
@@ -790,9 +797,104 @@
 
         // Display results
         displayResults(percentages);
+        drawRadarChart(percentages);
         quizResults.style.display = 'block';
         quizResults.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       });
+
+      function drawRadarChart(percentages) {
+        const chartCanvas = document.getElementById('personalityChart');
+        const chartCtx = chartCanvas.getContext('2d');
+        const centerX = chartCanvas.width / 2;
+        const centerY = chartCanvas.height / 2;
+        const maxRadius = 150;
+
+        // Clear canvas
+        chartCtx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
+
+        // Trait labels and data
+        const traits = [
+          { key: 'openness', label: 'Openness', angle: -Math.PI / 2 },
+          { key: 'conscientiousness', label: 'Conscientiousness', angle: -Math.PI / 2 + (2 * Math.PI / 5) },
+          { key: 'extraversion', label: 'Extraversion', angle: -Math.PI / 2 + (4 * Math.PI / 5) },
+          { key: 'agreeableness', label: 'Agreeableness', angle: -Math.PI / 2 + (6 * Math.PI / 5) },
+          { key: 'neuroticism', label: 'Emotional Stability', angle: -Math.PI / 2 + (8 * Math.PI / 5) }
+        ];
+
+        // Draw background grid circles
+        chartCtx.strokeStyle = '#ddd';
+        chartCtx.lineWidth = 1;
+        for (let i = 1; i <= 5; i++) {
+          chartCtx.beginPath();
+          chartCtx.arc(centerX, centerY, (maxRadius / 5) * i, 0, 2 * Math.PI);
+          chartCtx.stroke();
+        }
+
+        // Draw axes and labels
+        chartCtx.strokeStyle = '#ccc';
+        chartCtx.fillStyle = '#003366';
+        chartCtx.font = 'bold 12px Arial';
+        chartCtx.textAlign = 'center';
+        chartCtx.textBaseline = 'middle';
+
+        traits.forEach(trait => {
+          const x = centerX + Math.cos(trait.angle) * maxRadius;
+          const y = centerY + Math.sin(trait.angle) * maxRadius;
+
+          // Draw axis line
+          chartCtx.beginPath();
+          chartCtx.moveTo(centerX, centerY);
+          chartCtx.lineTo(x, y);
+          chartCtx.stroke();
+
+          // Draw label
+          const labelX = centerX + Math.cos(trait.angle) * (maxRadius + 30);
+          const labelY = centerY + Math.sin(trait.angle) * (maxRadius + 30);
+          chartCtx.fillText(trait.label, labelX, labelY);
+        });
+
+        // Draw data polygon
+        chartCtx.beginPath();
+        chartCtx.strokeStyle = '#003366';
+        chartCtx.fillStyle = 'rgba(0, 51, 102, 0.3)';
+        chartCtx.lineWidth = 2;
+
+        traits.forEach((trait, index) => {
+          const value = percentages[trait.key] / 100;
+          const radius = maxRadius * value;
+          const x = centerX + Math.cos(trait.angle) * radius;
+          const y = centerY + Math.sin(trait.angle) * radius;
+
+          if (index === 0) {
+            chartCtx.moveTo(x, y);
+          } else {
+            chartCtx.lineTo(x, y);
+          }
+        });
+
+        chartCtx.closePath();
+        chartCtx.fill();
+        chartCtx.stroke();
+
+        // Draw data points
+        chartCtx.fillStyle = '#003366';
+        traits.forEach(trait => {
+          const value = percentages[trait.key] / 100;
+          const radius = maxRadius * value;
+          const x = centerX + Math.cos(trait.angle) * radius;
+          const y = centerY + Math.sin(trait.angle) * radius;
+
+          chartCtx.beginPath();
+          chartCtx.arc(x, y, 5, 0, 2 * Math.PI);
+          chartCtx.fill();
+        });
+
+        // Draw center point
+        chartCtx.fillStyle = '#666';
+        chartCtx.beginPath();
+        chartCtx.arc(centerX, centerY, 3, 0, 2 * Math.PI);
+        chartCtx.fill();
+      }
 
       function displayResults(percentages) {
         let html = '';
