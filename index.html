@@ -132,6 +132,51 @@
         margin: 25px 0;
       }
 
+      .applet-container {
+        background: #f9f9f9;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin: 20px 0;
+      }
+
+      canvas {
+        border: 1px solid #999;
+        display: block;
+        margin: 15px auto;
+        background: white;
+      }
+
+      .controls {
+        text-align: center;
+        margin: 15px 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      }
+
+      .controls label {
+        margin-right: 10px;
+        font-weight: bold;
+      }
+
+      .controls input[type="range"] {
+        width: 200px;
+        vertical-align: middle;
+      }
+
+      .controls button {
+        background: #003366;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        margin: 5px;
+        cursor: pointer;
+        border-radius: 3px;
+      }
+
+      .controls button:hover {
+        background: #004488;
+      }
+
       @media (max-width: 768px) {
         .container {
           flex-direction: column;
@@ -153,6 +198,7 @@
         <ul>
           <li><a href="#about">About</a></li>
           <li><a href="#research">Research</a></li>
+          <li><a href="#applet">Interactive Demo</a></li>
           <li><a href="#publications">Publications</a></li>
           <li><a href="#teaching">Teaching</a></li>
           <li><a href="#contact">Contact</a></li>
@@ -190,6 +236,36 @@
 
           <h3>Current Projects</h3>
           <p>I am currently working on several research projects involving large-scale data analysis, development of novel algorithms, and applications to real-world problems. My research is supported by various grants and collaborative partnerships.</p>
+        </section>
+
+        <hr>
+
+        <section id="applet">
+          <h2>Interactive Demo: Entropic Regularization</h2>
+          <p>This interactive applet demonstrates entropic regularization in optimal transport using the Sinkhorn algorithm. The visualization shows how the regularization parameter affects the transport plan between two probability distributions.</p>
+
+          <div class="applet-container">
+            <canvas id="transportCanvas" width="400" height="400"></canvas>
+
+            <div class="controls">
+              <div>
+                <label for="epsilon">Regularization (ε):</label>
+                <input type="range" id="epsilon" min="0.01" max="1" step="0.01" value="0.1">
+                <span id="epsilonValue">0.1</span>
+              </div>
+              <div style="margin-top: 10px;">
+                <button id="runButton">Run Sinkhorn</button>
+                <button id="resetButton">Reset</button>
+              </div>
+              <div style="margin-top: 10px;">
+                <small>Iterations: <span id="iterations">0</span> | Convergence: <span id="convergence">0.000</span></small>
+              </div>
+            </div>
+
+            <p style="text-align: center; font-size: 0.9em; margin-top: 15px;">
+              <strong>Instructions:</strong> Adjust the regularization parameter ε and click "Run Sinkhorn" to see how it affects the optimal transport plan. Lower values produce sparser solutions, while higher values produce smoother distributions.
+            </p>
+          </div>
         </section>
 
         <hr>
@@ -247,5 +323,182 @@
         </p>
       </div>
     </div>
+
+    <script>
+      // Entropic Regularization Applet - Sinkhorn Algorithm
+      const canvas = document.getElementById('transportCanvas');
+      const ctx = canvas.getContext('2d');
+      const n = 20; // Grid size
+
+      let costMatrix = [];
+      let transportPlan = [];
+      let sourceDistribution = [];
+      let targetDistribution = [];
+
+      // Initialize distributions and cost matrix
+      function initialize() {
+        // Create two different distributions
+        sourceDistribution = new Array(n).fill(0);
+        targetDistribution = new Array(n).fill(0);
+
+        // Gaussian-like distributions
+        for (let i = 0; i < n; i++) {
+          sourceDistribution[i] = Math.exp(-Math.pow(i - n/3, 2) / 20);
+          targetDistribution[i] = Math.exp(-Math.pow(i - 2*n/3, 2) / 20);
+        }
+
+        // Normalize
+        let sumSource = sourceDistribution.reduce((a, b) => a + b, 0);
+        let sumTarget = targetDistribution.reduce((a, b) => a + b, 0);
+        sourceDistribution = sourceDistribution.map(x => x / sumSource);
+        targetDistribution = targetDistribution.map(x => x / sumTarget);
+
+        // Create cost matrix (Euclidean distance)
+        costMatrix = Array(n).fill(0).map(() => Array(n).fill(0));
+        for (let i = 0; i < n; i++) {
+          for (let j = 0; j < n; j++) {
+            costMatrix[i][j] = Math.pow(i - j, 2);
+          }
+        }
+
+        // Initialize transport plan
+        transportPlan = Array(n).fill(0).map(() => Array(n).fill(1/n/n));
+      }
+
+      // Sinkhorn algorithm
+      function sinkhorn(epsilon, maxIter = 100) {
+        // Compute kernel matrix
+        const K = Array(n).fill(0).map(() => Array(n).fill(0));
+        for (let i = 0; i < n; i++) {
+          for (let j = 0; j < n; j++) {
+            K[i][j] = Math.exp(-costMatrix[i][j] / epsilon);
+          }
+        }
+
+        let u = new Array(n).fill(1/n);
+        let v = new Array(n).fill(1/n);
+
+        let iter = 0;
+        let error = 1;
+
+        while (iter < maxIter && error > 1e-6) {
+          const u_old = [...u];
+
+          // Update u
+          for (let i = 0; i < n; i++) {
+            let sum = 0;
+            for (let j = 0; j < n; j++) {
+              sum += K[i][j] * v[j];
+            }
+            u[i] = sourceDistribution[i] / (sum + 1e-10);
+          }
+
+          // Update v
+          for (let j = 0; j < n; j++) {
+            let sum = 0;
+            for (let i = 0; i < n; i++) {
+              sum += K[i][j] * u[i];
+            }
+            v[j] = targetDistribution[j] / (sum + 1e-10);
+          }
+
+          // Compute error
+          error = 0;
+          for (let i = 0; i < n; i++) {
+            error += Math.abs(u[i] - u_old[i]);
+          }
+
+          iter++;
+        }
+
+        // Compute transport plan
+        for (let i = 0; i < n; i++) {
+          for (let j = 0; j < n; j++) {
+            transportPlan[i][j] = u[i] * K[i][j] * v[j];
+          }
+        }
+
+        return { iter, error };
+      }
+
+      // Visualize the transport plan
+      function visualize() {
+        const cellSize = canvas.width / n;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Find max value for normalization
+        let maxVal = 0;
+        for (let i = 0; i < n; i++) {
+          for (let j = 0; j < n; j++) {
+            maxVal = Math.max(maxVal, transportPlan[i][j]);
+          }
+        }
+
+        // Draw transport plan heatmap
+        for (let i = 0; i < n; i++) {
+          for (let j = 0; j < n; j++) {
+            const intensity = transportPlan[i][j] / maxVal;
+            const color = Math.floor(255 * (1 - intensity));
+            ctx.fillStyle = `rgb(${color}, ${color}, 255)`;
+            ctx.fillRect(j * cellSize, i * cellSize, cellSize, cellSize);
+          }
+        }
+
+        // Draw grid
+        ctx.strokeStyle = '#ddd';
+        ctx.lineWidth = 0.5;
+        for (let i = 0; i <= n; i++) {
+          ctx.beginPath();
+          ctx.moveTo(i * cellSize, 0);
+          ctx.lineTo(i * cellSize, canvas.height);
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.moveTo(0, i * cellSize);
+          ctx.lineTo(canvas.width, i * cellSize);
+          ctx.stroke();
+        }
+
+        // Draw marginals
+        ctx.fillStyle = '#003366';
+        const barWidth = cellSize * 0.8;
+
+        // Source distribution (left side)
+        for (let i = 0; i < n; i++) {
+          const barHeight = sourceDistribution[i] * cellSize * 5;
+          ctx.fillRect(-barWidth, i * cellSize + (cellSize - barHeight) / 2, barWidth, barHeight);
+        }
+
+        // Target distribution (top)
+        for (let j = 0; j < n; j++) {
+          const barHeight = targetDistribution[j] * cellSize * 5;
+          ctx.fillRect(j * cellSize + (cellSize - barHeight) / 2, -barWidth, barHeight, barWidth);
+        }
+      }
+
+      // Event listeners
+      document.getElementById('epsilon').addEventListener('input', function() {
+        document.getElementById('epsilonValue').textContent = this.value;
+      });
+
+      document.getElementById('runButton').addEventListener('click', function() {
+        const epsilon = parseFloat(document.getElementById('epsilon').value);
+        const result = sinkhorn(epsilon);
+        visualize();
+        document.getElementById('iterations').textContent = result.iter;
+        document.getElementById('convergence').textContent = result.error.toFixed(6);
+      });
+
+      document.getElementById('resetButton').addEventListener('click', function() {
+        initialize();
+        visualize();
+        document.getElementById('iterations').textContent = '0';
+        document.getElementById('convergence').textContent = '0.000';
+      });
+
+      // Initialize on load
+      initialize();
+      visualize();
+    </script>
   </body>
 </html>
