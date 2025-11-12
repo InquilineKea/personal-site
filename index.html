@@ -245,7 +245,7 @@
           <p>This interactive applet demonstrates entropic regularization in optimal transport using the Sinkhorn algorithm. The visualization shows how the regularization parameter affects the transport plan between two probability distributions.</p>
 
           <div class="applet-container">
-            <canvas id="transportCanvas" width="400" height="400"></canvas>
+            <canvas id="transportCanvas" width="500" height="500"></canvas>
 
             <div class="controls">
               <div>
@@ -459,21 +459,10 @@
           ctx.stroke();
         }
 
-        // Draw marginals
+        // Add text to show it's working
         ctx.fillStyle = '#003366';
-        const barWidth = cellSize * 0.8;
-
-        // Source distribution (left side)
-        for (let i = 0; i < n; i++) {
-          const barHeight = sourceDistribution[i] * cellSize * 5;
-          ctx.fillRect(-barWidth, i * cellSize + (cellSize - barHeight) / 2, barWidth, barHeight);
-        }
-
-        // Target distribution (top)
-        for (let j = 0; j < n; j++) {
-          const barHeight = targetDistribution[j] * cellSize * 5;
-          ctx.fillRect(j * cellSize + (cellSize - barHeight) / 2, -barWidth, barHeight, barWidth);
-        }
+        ctx.font = '14px Arial';
+        ctx.fillText('Source (rows) → Target (columns)', 10, canvas.height - 5);
       }
 
       // Event listeners
