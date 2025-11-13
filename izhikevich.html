@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Izhikevich Neuron Model - Interactive Simulation</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+
+        .equation {
+            background: #f5f5f5;
+            padding: 15px;
+            border-left: 4px solid #667eea;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .canvas-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        canvas {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            width: 100%;
+            height: auto;
+        }
+
+        .canvas-wrapper {
+            text-align: center;
+        }
+
+        .canvas-wrapper h3 {
+            margin-top: 0;
+            color: #667eea;
+        }
+
+        .controls {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .control-group {
+            margin: 15px 0;
+        }
+
+        .control-group label {
+            display: inline-block;
+            width: 150px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .control-group input[type="range"] {
+            width: 300px;
+            vertical-align: middle;
+        }
+
+        .control-group .value {
+            display: inline-block;
+            width: 80px;
+            text-align: right;
+            font-family: 'Courier New', monospace;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .presets {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .preset-btn, .control-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .preset-btn {
+            background: #667eea;
+            color: white;
+        }
+
+        .preset-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .control-btn {
+            background: #4CAF50;
+            color: white;
+            font-size: 16px;
+        }
+
+        .control-btn:hover {
+            background: #45a049;
+        }
+
+        .control-btn.pause {
+            background: #ff9800;
+        }
+
+        .control-btn.reset {
+            background: #f44336;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+        }
+
+        @media (max-width: 968px) {
+            .canvas-container {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .control-group input[type="range"] {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Izhikevich Neuron Model</h1>
+        <p class="subtitle">Interactive simulation of spiking neuron dynamics</p>
+
+        <div class="equation">
+            <strong>Model Equations:</strong><br>
+            v' = 0.04v² + 5v + 140 - u + I<br>
+            u' = a(bv - u)<br>
+            <br>
+            <strong>When v ≥ 30mV:</strong> v ← c, u ← u + d
+        </div>
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-label">Membrane Potential (v)</div>
+                <div class="stat-value" id="stat-v">-65</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Recovery Variable (u)</div>
+                <div class="stat-value" id="stat-u">-13</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Spike Count</div>
+                <div class="stat-value" id="stat-spikes">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Time (ms)</div>
+                <div class="stat-value" id="stat-time">0</div>
+            </div>
+        </div>
+
+        <div class="canvas-container">
+            <div class="canvas-wrapper">
+                <h3>Membrane Potential (Time Series)</h3>
+                <canvas id="timeCanvas" width="600" height="400"></canvas>
+            </div>
+            <div class="canvas-wrapper">
+                <h3>Phase Plot (v vs u)</h3>
+                <canvas id="phaseCanvas" width="600" height="400"></canvas>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="control-btn" id="playPauseBtn">Pause</button>
+            <button class="control-btn reset" id="resetBtn">Reset</button>
+        </div>
+
+        <div class="controls">
+            <h3>Neuron Type Presets</h3>
+            <div class="presets">
+                <button class="preset-btn" onclick="setPreset('RS')">Regular Spiking</button>
+                <button class="preset-btn" onclick="setPreset('IB')">Intrinsically Bursting</button>
+                <button class="preset-btn" onclick="setPreset('CH')">Chattering</button>
+                <button class="preset-btn" onclick="setPreset('FS')">Fast Spiking</button>
+                <button class="preset-btn" onclick="setPreset('LTS')">Low-Threshold Spiking</button>
+                <button class="preset-btn" onclick="setPreset('RZ')">Resonator</button>
+            </div>
+
+            <h3>Parameters</h3>
+            <div class="control-group">
+                <label for="param-a">a (recovery time):</label>
+                <input type="range" id="param-a" min="0.001" max="0.2" step="0.001" value="0.02">
+                <span class="value" id="val-a">0.020</span>
+            </div>
+            <div class="control-group">
+                <label for="param-b">b (sensitivity):</label>
+                <input type="range" id="param-b" min="0.01" max="0.3" step="0.01" value="0.2">
+                <span class="value" id="val-b">0.200</span>
+            </div>
+            <div class="control-group">
+                <label for="param-c">c (reset potential):</label>
+                <input type="range" id="param-c" min="-80" max="-40" step="1" value="-65">
+                <span class="value" id="val-c">-65</span>
+            </div>
+            <div class="control-group">
+                <label for="param-d">d (reset recovery):</label>
+                <input type="range" id="param-d" min="0" max="10" step="0.1" value="8">
+                <span class="value" id="val-d">8.0</span>
+            </div>
+            <div class="control-group">
+                <label for="param-I">I (input current):</label>
+                <input type="range" id="param-I" min="0" max="20" step="0.1" value="10">
+                <span class="value" id="val-I">10.0</span>
+            </div>
+        </div>
+
+        <p style="text-align: center; margin-top: 30px;">
+            <a href="index.html">← Back to Home</a> |
+            <a href="https://www.izhikevich.org/publications/spikes.htm" target="_blank">Learn More About the Model</a>
+        </p>
+    </div>
+
+    <script>
+        // Canvas setup
+        const timeCanvas = document.getElementById('timeCanvas');
+        const phaseCanvas = document.getElementById('phaseCanvas');
+        const timeCtx = timeCanvas.getContext('2d');
+        const phaseCtx = phaseCanvas.getContext('2d');
+
+        // Neuron parameters
+        let params = {
+            a: 0.02,
+            b: 0.2,
+            c: -65,
+            d: 8,
+            I: 10
+        };
+
+        // State variables
+        let v = -65;  // membrane potential
+        let u = params.b * v;  // recovery variable
+
+        // Simulation state
+        let time = 0;
+        let dt = 0.5;  // time step (ms)
+        let timeHistory = [];
+        let vHistory = [];
+        let phaseHistory = [];
+        let spikeCount = 0;
+        let isRunning = true;
+
+        const maxHistoryPoints = 1000;
+
+        // Presets for different neuron types
+        const presets = {
+            'RS': { a: 0.02, b: 0.2, c: -65, d: 8, I: 10 },     // Regular Spiking
+            'IB': { a: 0.02, b: 0.2, c: -55, d: 4, I: 10 },     // Intrinsically Bursting
+            'CH': { a: 0.02, b: 0.2, c: -50, d: 2, I: 10 },     // Chattering
+            'FS': { a: 0.1, b: 0.2, c: -65, d: 2, I: 10 },      // Fast Spiking
+            'LTS': { a: 0.02, b: 0.25, c: -65, d: 2, I: 10 },   // Low-Threshold Spiking
+            'RZ': { a: 0.1, b: 0.26, c: -65, d: 2, I: 10 }      // Resonator
+        };
+
+        // Set preset
+        function setPreset(type) {
+            const preset = presets[type];
+            params = { ...preset };
+
+            // Update sliders
+            document.getElementById('param-a').value = params.a;
+            document.getElementById('param-b').value = params.b;
+            document.getElementById('param-c').value = params.c;
+            document.getElementById('param-d').value = params.d;
+            document.getElementById('param-I').value = params.I;
+
+            updateDisplayValues();
+            reset();
+        }
+
+        // Update display values
+        function updateDisplayValues() {
+            document.getElementById('val-a').textContent = params.a.toFixed(3);
+            document.getElementById('val-b').textContent = params.b.toFixed(3);
+            document.getElementById('val-c').textContent = params.c.toFixed(0);
+            document.getElementById('val-d').textContent = params.d.toFixed(1);
+            document.getElementById('val-I').textContent = params.I.toFixed(1);
+        }
+
+        // Setup parameter controls
+        function setupControls() {
+            const paramInputs = ['a', 'b', 'c', 'd', 'I'];
+            paramInputs.forEach(param => {
+                const input = document.getElementById(`param-${param}`);
+                input.addEventListener('input', (e) => {
+                    params[param] = parseFloat(e.target.value);
+                    updateDisplayValues();
+                });
+            });
+        }
+
+        // Reset simulation
+        function reset() {
+            v = -65;
+            u = params.b * v;
+            time = 0;
+            timeHistory = [];
+            vHistory = [];
+            phaseHistory = [];
+            spikeCount = 0;
+            clearCanvases();
+        }
+
+        // Clear canvases
+        function clearCanvases() {
+            timeCtx.fillStyle = 'white';
+            timeCtx.fillRect(0, 0, timeCanvas.width, timeCanvas.height);
+            phaseCtx.fillStyle = 'white';
+            phaseCtx.fillRect(0, 0, phaseCanvas.width, phaseCanvas.height);
+        }
+
+        // Izhikevich model step
+        function step() {
+            // Izhikevich model equations
+            const dv = 0.04 * v * v + 5 * v + 140 - u + params.I;
+            const du = params.a * (params.b * v - u);
+
+            v += dv * dt;
+            u += du * dt;
+
+            // Check for spike
+            if (v >= 30) {
+                vHistory.push(30);  // Record spike peak
+                phaseHistory.push({ v: 30, u: u });
+
+                v = params.c;
+                u = u + params.d;
+                spikeCount++;
+            }
+
+            // Record history
+            timeHistory.push(time);
+            vHistory.push(v);
+            phaseHistory.push({ v: v, u: u });
+
+            // Limit history length
+            if (timeHistory.length > maxHistoryPoints) {
+                timeHistory.shift();
+                vHistory.shift();
+                phaseHistory.shift();
+            }
+
+            time += dt;
+        }
+
+        // Draw time series
+        function drawTimeSeries() {
+            const canvas = timeCanvas;
+            const ctx = timeCtx;
+            const width = canvas.width;
+            const height = canvas.height;
+
+            // Clear
+            ctx.fillStyle = '#fafafa';
+            ctx.fillRect(0, 0, width, height);
+
+            // Draw grid
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 1;
+
+            // Horizontal lines
+            for (let i = 0; i <= 10; i++) {
+                const y = (i / 10) * height;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+            }
+
+            // Vertical lines
+            for (let i = 0; i <= 10; i++) {
+                const x = (i / 10) * width;
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, height);
+                ctx.stroke();
+            }
+
+            // Draw axes labels
+            ctx.fillStyle = '#666';
+            ctx.font = '12px Arial';
+            ctx.fillText('v (mV)', 10, 20);
+            ctx.fillText('time (ms)', width - 70, height - 10);
+
+            // Draw voltage scale
+            ctx.textAlign = 'right';
+            for (let v = -80; v <= 30; v += 20) {
+                const y = height - ((v + 80) / 110) * height;
+                ctx.fillText(v.toString(), 30, y + 4);
+            }
+            ctx.textAlign = 'left';
+
+            if (vHistory.length < 2) return;
+
+            // Draw membrane potential
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+
+            const timeRange = Math.max(...timeHistory) - Math.min(...timeHistory);
+            const timeMin = timeHistory.length > 0 ? Math.min(...timeHistory) : 0;
+
+            for (let i = 0; i < vHistory.length; i++) {
+                const x = ((timeHistory[i] - timeMin) / Math.max(timeRange, 100)) * width;
+                const y = height - ((vHistory[i] + 80) / 110) * height;
+
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.stroke();
+
+            // Draw threshold line
+            ctx.strokeStyle = '#ff5252';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            const thresholdY = height - ((30 + 80) / 110) * height;
+            ctx.beginPath();
+            ctx.moveTo(0, thresholdY);
+            ctx.lineTo(width, thresholdY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        // Draw phase plot
+        function drawPhasePlot() {
+            const canvas = phaseCanvas;
+            const ctx = phaseCtx;
+            const width = canvas.width;
+            const height = canvas.height;
+
+            // Clear
+            ctx.fillStyle = '#fafafa';
+            ctx.fillRect(0, 0, width, height);
+
+            // Draw grid
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 1;
+
+            for (let i = 0; i <= 10; i++) {
+                const y = (i / 10) * height;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+
+                const x = (i / 10) * width;
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, height);
+                ctx.stroke();
+            }
+
+            // Draw axes labels
+            ctx.fillStyle = '#666';
+            ctx.font = '12px Arial';
+            ctx.fillText('v (mV)', 10, 20);
+            ctx.fillText('u', width - 30, height - 10);
+
+            // Draw v scale
+            ctx.textAlign = 'right';
+            for (let v = -80; v <= 30; v += 20) {
+                const y = height - ((v + 80) / 110) * height;
+                ctx.fillText(v.toString(), 30, y + 4);
+            }
+            ctx.textAlign = 'left';
+
+            // Draw u scale
+            for (let u = -20; u <= 20; u += 10) {
+                const x = ((u + 20) / 40) * width;
+                ctx.fillText(u.toString(), x - 10, height - 10);
+            }
+
+            if (phaseHistory.length < 2) return;
+
+            // Draw phase trajectory with gradient
+            const startIdx = Math.max(0, phaseHistory.length - 500);
+
+            for (let i = startIdx; i < phaseHistory.length - 1; i++) {
+                const point = phaseHistory[i];
+                const nextPoint = phaseHistory[i + 1];
+
+                const x1 = ((point.v + 80) / 110) * width;
+                const y1 = height - ((point.u + 20) / 40) * height;
+                const x2 = ((nextPoint.v + 80) / 110) * width;
+                const y2 = height - ((nextPoint.u + 20) / 40) * height;
+
+                // Color gradient from old (faint) to new (bright)
+                const alpha = 0.3 + 0.7 * ((i - startIdx) / (phaseHistory.length - startIdx));
+                ctx.strokeStyle = `rgba(102, 126, 234, ${alpha})`;
+                ctx.lineWidth = 2;
+
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            }
+
+            // Draw current position
+            if (phaseHistory.length > 0) {
+                const current = phaseHistory[phaseHistory.length - 1];
+                const x = ((current.v + 80) / 110) * width;
+                const y = height - ((current.u + 20) / 40) * height;
+
+                ctx.fillStyle = '#ff5252';
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+        }
+
+        // Update stats display
+        function updateStats() {
+            document.getElementById('stat-v').textContent = v.toFixed(1);
+            document.getElementById('stat-u').textContent = u.toFixed(1);
+            document.getElementById('stat-spikes').textContent = spikeCount;
+            document.getElementById('stat-time').textContent = time.toFixed(0);
+        }
+
+        // Animation loop
+        function animate() {
+            if (isRunning) {
+                // Run multiple steps per frame for smooth animation
+                for (let i = 0; i < 2; i++) {
+                    step();
+                }
+            }
+
+            drawTimeSeries();
+            drawPhasePlot();
+            updateStats();
+
+            requestAnimationFrame(animate);
+        }
+
+        // Button controls
+        document.getElementById('playPauseBtn').addEventListener('click', () => {
+            isRunning = !isRunning;
+            document.getElementById('playPauseBtn').textContent = isRunning ? 'Pause' : 'Play';
+            document.getElementById('playPauseBtn').className = isRunning ? 'control-btn pause' : 'control-btn';
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', reset);
+
+        // Initialize
+        setupControls();
+        updateDisplayValues();
+        clearCanvases();
+        animate();
+    </script>
+</body>
+</html>
