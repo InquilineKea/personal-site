@@ -1,0 +1,12 @@
+{
+  "name": "personal-site-flask",
+  "version": "1.0.0",
+  "description": "Flask app with public URL tunneling for personal website",
+  "scripts": {
+    "tunnel": "node tunnel.js",
+    "start": "python app.py"
+  },
+  "dependencies": {
+    "localtunnel": "^2.0.2"
+  }
+}
