@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THERML - Thermal Analysis Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .header {
+            padding: 20px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .panel h2 {
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 10px;
+        }
+
+        canvas {
+            width: 100%;
+            height: 300px;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            cursor: crosshair;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 5px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1em;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .stat-box {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔥 THERML - Thermal Analysis Dashboard</h1>
+        <p>Advanced Interactive Thermal Simulation & Visualization System</p>
+    </div>
+
+    <div class="dashboard">
+        <div class="panel">
+            <h2>2D Heat Map Simulation</h2>
+            <canvas id="heatmapCanvas"></canvas>
+            <div class="controls">
+                <div class="control-group">
+                    <label>Temperature: <span id="tempValue">50</span>°C</label>
+                    <input type="range" id="tempSlider" min="0" max="100" value="50">
+                </div>
+                <div class="control-group">
+                    <label>Conductivity: <span id="condValue">0.5</span></label>
+                    <input type="range" id="condSlider" min="0" max="100" value="50">
+                </div>
+                <div class="control-group">
+                    <label>Diffusion Rate: <span id="diffValue">0.3</span></label>
+                    <input type="range" id="diffSlider" min="0" max="100" value="30">
+                </div>
+                <div class="control-group">
+                    <button onclick="resetSimulation()">Reset</button>
+                </div>
+            </div>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #0000ff;"></div>
+                    <span>Cold</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #00ff00;"></div>
+                    <span>Warm</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ff0000;"></div>
+                    <span>Hot</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>Real-time Temperature Graph</h2>
+            <canvas id="graphCanvas"></canvas>
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-label">Average Temp</div>
+                    <div class="stat-value" id="avgTemp">25°C</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Max Temp</div>
+                    <div class="stat-value" id="maxTemp">100°C</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Min Temp</div>
+                    <div class="stat-value" id="minTemp">0°C</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Hot Spots</div>
+                    <div class="stat-value" id="hotSpots">3</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>3D Thermal Profile</h2>
+            <canvas id="profile3D"></canvas>
+            <div class="controls">
+                <div class="control-group">
+                    <label>View Angle: <span id="angleValue">45</span>°</label>
+                    <input type="range" id="angleSlider" min="0" max="360" value="45">
+                </div>
+                <div class="control-group">
+                    <label>Height Scale: <span id="scaleValue">1.0</span>x</label>
+                    <input type="range" id="scaleSlider" min="10" max="200" value="100">
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>Thermal Flow Vectors</h2>
+            <canvas id="vectorCanvas"></canvas>
+            <div class="controls">
+                <div class="control-group">
+                    <label>Flow Speed: <span id="flowValue">0.5</span></label>
+                    <input type="range" id="flowSlider" min="0" max="100" value="50">
+                </div>
+                <div class="control-group">
+                    <button onclick="toggleAnimation()">Pause/Resume</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize canvases
+        const heatmapCanvas = document.getElementById('heatmapCanvas');
+        const graphCanvas = document.getElementById('graphCanvas');
+        const profile3D = document.getElementById('profile3D');
+        const vectorCanvas = document.getElementById('vectorCanvas');
+
+        const heatCtx = heatmapCanvas.getContext('2d');
+        const graphCtx = graphCanvas.getContext('2d');
+        const profile3DCtx = profile3D.getContext('2d');
+        const vectorCtx = vectorCanvas.getContext('2d');
+
+        // Set canvas sizes
+        function resizeCanvases() {
+            [heatmapCanvas, graphCanvas, profile3D, vectorCanvas].forEach(canvas => {
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+            });
+        }
+        resizeCanvases();
+        window.addEventListener('resize', resizeCanvases);
+
+        // Simulation parameters
+        let temp = 50;
+        let conductivity = 0.5;
+        let diffusionRate = 0.3;
+        let flowSpeed = 0.5;
+        let viewAngle = 45;
+        let heightScale = 1.0;
+        let animationRunning = true;
+
+        // Heat map grid
+        const gridSize = 50;
+        let heatGrid = Array(gridSize).fill(0).map(() => Array(gridSize).fill(20));
+        let graphData = [];
+        let time = 0;
+
+        // Event listeners
+        document.getElementById('tempSlider').addEventListener('input', (e) => {
+            temp = e.target.value;
+            document.getElementById('tempValue').textContent = temp;
+        });
+
+        document.getElementById('condSlider').addEventListener('input', (e) => {
+            conductivity = e.target.value / 100;
+            document.getElementById('condValue').textContent = conductivity.toFixed(2);
+        });
+
+        document.getElementById('diffSlider').addEventListener('input', (e) => {
+            diffusionRate = e.target.value / 100;
+            document.getElementById('diffValue').textContent = diffusionRate.toFixed(2);
+        });
+
+        document.getElementById('flowSlider').addEventListener('input', (e) => {
+            flowSpeed = e.target.value / 100;
+            document.getElementById('flowValue').textContent = flowSpeed.toFixed(2);
+        });
+
+        document.getElementById('angleSlider').addEventListener('input', (e) => {
+            viewAngle = e.target.value;
+            document.getElementById('angleValue').textContent = viewAngle;
+        });
+
+        document.getElementById('scaleSlider').addEventListener('input', (e) => {
+            heightScale = e.target.value / 100;
+            document.getElementById('scaleValue').textContent = heightScale.toFixed(1);
+        });
+
+        // Add heat source on click
+        heatmapCanvas.addEventListener('click', (e) => {
+            const rect = heatmapCanvas.getBoundingClientRect();
+            const x = Math.floor((e.clientX - rect.left) / rect.width * gridSize);
+            const y = Math.floor((e.clientY - rect.top) / rect.height * gridSize);
+
+            for (let i = Math.max(0, x-2); i < Math.min(gridSize, x+3); i++) {
+                for (let j = Math.max(0, y-2); j < Math.min(gridSize, y+3); j++) {
+                    heatGrid[i][j] = Math.min(100, heatGrid[i][j] + parseFloat(temp));
+                }
+            }
+        });
+
+        function resetSimulation() {
+            heatGrid = Array(gridSize).fill(0).map(() => Array(gridSize).fill(20));
+            graphData = [];
+            time = 0;
+        }
+
+        function toggleAnimation() {
+            animationRunning = !animationRunning;
+        }
+
+        function temperatureToColor(temp) {
+            const normalized = temp / 100;
+            let r, g, b;
+
+            if (normalized < 0.5) {
+                r = 0;
+                g = Math.floor(normalized * 2 * 255);
+                b = Math.floor((1 - normalized * 2) * 255);
+            } else {
+                r = Math.floor((normalized - 0.5) * 2 * 255);
+                g = Math.floor((1 - (normalized - 0.5) * 2) * 255);
+                b = 0;
+            }
+
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+
+        function updateHeatMap() {
+            if (!animationRunning) return;
+
+            // Diffusion simulation
+            const newGrid = heatGrid.map(row => [...row]);
+
+            for (let i = 1; i < gridSize - 1; i++) {
+                for (let j = 1; j < gridSize - 1; j++) {
+                    const avg = (
+                        heatGrid[i-1][j] + heatGrid[i+1][j] +
+                        heatGrid[i][j-1] + heatGrid[i][j+1]
+                    ) / 4;
+
+                    newGrid[i][j] = heatGrid[i][j] + (avg - heatGrid[i][j]) * diffusionRate * conductivity;
+                    newGrid[i][j] = Math.max(0, Math.min(100, newGrid[i][j]));
+                }
+            }
+
+            heatGrid = newGrid;
+
+            // Draw heat map
+            const cellWidth = heatmapCanvas.width / gridSize;
+            const cellHeight = heatmapCanvas.height / gridSize;
+
+            for (let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize; j++) {
+                    heatCtx.fillStyle = temperatureToColor(heatGrid[i][j]);
+                    heatCtx.fillRect(i * cellWidth, j * cellHeight, cellWidth, cellHeight);
+                }
+            }
+        }
+
+        function updateGraph() {
+            const avgTemp = heatGrid.flat().reduce((a, b) => a + b, 0) / (gridSize * gridSize);
+            const maxTemp = Math.max(...heatGrid.flat());
+            const minTemp = Math.min(...heatGrid.flat());
+            const hotSpots = heatGrid.flat().filter(t => t > 80).length;
+
+            document.getElementById('avgTemp').textContent = avgTemp.toFixed(1) + '°C';
+            document.getElementById('maxTemp').textContent = maxTemp.toFixed(1) + '°C';
+            document.getElementById('minTemp').textContent = minTemp.toFixed(1) + '°C';
+            document.getElementById('hotSpots').textContent = Math.floor(hotSpots / 10);
+
+            graphData.push(avgTemp);
+            if (graphData.length > 100) graphData.shift();
+
+            graphCtx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
+            graphCtx.strokeStyle = '#4CAF50';
+            graphCtx.lineWidth = 2;
+            graphCtx.beginPath();
+
+            for (let i = 0; i < graphData.length; i++) {
+                const x = (i / graphData.length) * graphCanvas.width;
+                const y = graphCanvas.height - (graphData[i] / 100) * graphCanvas.height;
+
+                if (i === 0) {
+                    graphCtx.moveTo(x, y);
+                } else {
+                    graphCtx.lineTo(x, y);
+                }
+            }
+
+            graphCtx.stroke();
+
+            // Draw grid
+            graphCtx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            graphCtx.lineWidth = 1;
+            for (let i = 0; i <= 10; i++) {
+                const y = (i / 10) * graphCanvas.height;
+                graphCtx.beginPath();
+                graphCtx.moveTo(0, y);
+                graphCtx.lineTo(graphCanvas.width, y);
+                graphCtx.stroke();
+            }
+        }
+
+        function draw3DProfile() {
+            profile3DCtx.clearRect(0, 0, profile3D.width, profile3D.height);
+
+            const step = 5;
+            const angle = (viewAngle * Math.PI) / 180;
+            const centerX = profile3D.width / 2;
+            const centerY = profile3D.height / 2;
+
+            for (let i = 0; i < gridSize; i += step) {
+                for (let j = 0; j < gridSize; j += step) {
+                    const temp = heatGrid[i][j];
+                    const height = temp * heightScale * 2;
+
+                    const x = (i - gridSize/2) * Math.cos(angle) * 3;
+                    const y = (j - gridSize/2) * 3;
+
+                    const screenX = centerX + x;
+                    const screenY = centerY + y - height;
+
+                    profile3DCtx.fillStyle = temperatureToColor(temp);
+                    profile3DCtx.beginPath();
+                    profile3DCtx.arc(screenX, screenY, 3, 0, Math.PI * 2);
+                    profile3DCtx.fill();
+                }
+            }
+        }
+
+        function drawVectors() {
+            vectorCtx.clearRect(0, 0, vectorCanvas.width, vectorCanvas.height);
+
+            const step = 10;
+            const cellWidth = vectorCanvas.width / gridSize;
+            const cellHeight = vectorCanvas.height / gridSize;
+
+            for (let i = step; i < gridSize - step; i += step) {
+                for (let j = step; j < gridSize - step; j += step) {
+                    const dx = (heatGrid[i+1][j] - heatGrid[i-1][j]) / 2;
+                    const dy = (heatGrid[i][j+1] - heatGrid[i][j-1]) / 2;
+
+                    const x = i * cellWidth;
+                    const y = j * cellHeight;
+
+                    vectorCtx.strokeStyle = temperatureToColor(heatGrid[i][j]);
+                    vectorCtx.lineWidth = 2;
+                    vectorCtx.beginPath();
+                    vectorCtx.moveTo(x, y);
+                    vectorCtx.lineTo(x + dx * flowSpeed * 5, y + dy * flowSpeed * 5);
+                    vectorCtx.stroke();
+
+                    // Arrow head
+                    const angle = Math.atan2(dy, dx);
+                    vectorCtx.beginPath();
+                    vectorCtx.moveTo(x + dx * flowSpeed * 5, y + dy * flowSpeed * 5);
+                    vectorCtx.lineTo(
+                        x + dx * flowSpeed * 5 - 5 * Math.cos(angle - Math.PI/6),
+                        y + dy * flowSpeed * 5 - 5 * Math.sin(angle - Math.PI/6)
+                    );
+                    vectorCtx.moveTo(x + dx * flowSpeed * 5, y + dy * flowSpeed * 5);
+                    vectorCtx.lineTo(
+                        x + dx * flowSpeed * 5 - 5 * Math.cos(angle + Math.PI/6),
+                        y + dy * flowSpeed * 5 - 5 * Math.sin(angle + Math.PI/6)
+                    );
+                    vectorCtx.stroke();
+                }
+            }
+        }
+
+        function animate() {
+            time++;
+            updateHeatMap();
+            updateGraph();
+            draw3DProfile();
+            drawVectors();
+            requestAnimationFrame(animate);
+        }
+
+        // Initialize with some heat sources
+        heatGrid[25][25] = 80;
+        heatGrid[15][35] = 60;
+        heatGrid[35][15] = 70;
+
+        animate();
+    </script>
+</body>
+</html>

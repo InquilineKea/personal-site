@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THERML Demo - Interactive Thermal Simulation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to bottom, #0f2027, #203a43, #2c5364);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .subtitle {
+            text-align: center;
+            margin-bottom: 30px;
+            opacity: 0.8;
+            font-size: 1.1em;
+        }
+
+        .demo-area {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        canvas {
+            width: 100%;
+            height: 400px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: block;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .control-item {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .control-item label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .value-display {
+            color: #4CAF50;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            margin-top: 5px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        button:active {
+            transform: translateY(-1px);
+        }
+
+        .info {
+            background: rgba(76, 175, 80, 0.2);
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .info h3 {
+            margin-bottom: 10px;
+        }
+
+        .temp-legend {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .color-box {
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 THERML Demo</h1>
+        <p class="subtitle">Click on the heat map to add heat sources!</p>
+
+        <div class="demo-area">
+            <canvas id="thermalCanvas"></canvas>
+        </div>
+
+        <div class="controls">
+            <div class="control-item">
+                <label>
+                    Source Temperature:
+                    <span class="value-display" id="tempDisplay">75°C</span>
+                </label>
+                <input type="range" id="tempSlider" min="0" max="100" value="75">
+            </div>
+
+            <div class="control-item">
+                <label>
+                    Diffusion Speed:
+                    <span class="value-display" id="diffusionDisplay">0.20</span>
+                </label>
+                <input type="range" id="diffusionSlider" min="0" max="100" value="20">
+            </div>
+
+            <div class="control-item">
+                <label>
+                    Cooling Rate:
+                    <span class="value-display" id="coolingDisplay">0.02</span>
+                </label>
+                <input type="range" id="coolingSlider" min="0" max="50" value="2">
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button onclick="resetDemo()">🔄 Reset</button>
+            <button onclick="addRandomHeat()">✨ Random Heat</button>
+            <button onclick="togglePause()">⏯️ <span id="pauseText">Pause</span></button>
+        </div>
+
+        <div class="temp-legend">
+            <div class="legend-item">
+                <div class="color-box" style="background: rgb(0, 0, 255);"></div>
+                <span>0°C - Cold</span>
+            </div>
+            <div class="legend-item">
+                <div class="color-box" style="background: rgb(0, 255, 0);"></div>
+                <span>50°C - Warm</span>
+            </div>
+            <div class="legend-item">
+                <div class="color-box" style="background: rgb(255, 0, 0);"></div>
+                <span>100°C - Hot</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <h3>ℹ️ How it works:</h3>
+            <p>This simulation demonstrates thermal diffusion using a 2D heat equation. Heat spreads from high-temperature areas to low-temperature areas over time. Click anywhere on the canvas to add heat sources and watch the thermal energy propagate!</p>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('thermalCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Set canvas size
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            initGrid();
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Simulation parameters
+        const gridSize = 60;
+        let heatGrid = [];
+        let sourceTemp = 75;
+        let diffusionRate = 0.20;
+        let coolingRate = 0.02;
+        let isPaused = false;
+
+        function initGrid() {
+            heatGrid = Array(gridSize).fill(0).map(() => Array(gridSize).fill(20));
+        }
+
+        initGrid();
+
+        // Event listeners for controls
+        document.getElementById('tempSlider').addEventListener('input', (e) => {
+            sourceTemp = parseInt(e.target.value);
+            document.getElementById('tempDisplay').textContent = sourceTemp + '°C';
+        });
+
+        document.getElementById('diffusionSlider').addEventListener('input', (e) => {
+            diffusionRate = parseInt(e.target.value) / 100;
+            document.getElementById('diffusionDisplay').textContent = diffusionRate.toFixed(2);
+        });
+
+        document.getElementById('coolingSlider').addEventListener('input', (e) => {
+            coolingRate = parseInt(e.target.value) / 1000;
+            document.getElementById('coolingDisplay').textContent = coolingRate.toFixed(3);
+        });
+
+        // Canvas click to add heat
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.floor((e.clientX - rect.left) / rect.width * gridSize);
+            const y = Math.floor((e.clientY - rect.top) / rect.height * gridSize);
+
+            addHeatSource(x, y, sourceTemp);
+        });
+
+        function addHeatSource(x, y, temp) {
+            const radius = 3;
+            for (let i = Math.max(0, x - radius); i < Math.min(gridSize, x + radius); i++) {
+                for (let j = Math.max(0, y - radius); j < Math.min(gridSize, y + radius); j++) {
+                    const distance = Math.sqrt((i - x) ** 2 + (j - y) ** 2);
+                    if (distance <= radius) {
+                        const falloff = 1 - (distance / radius);
+                        heatGrid[i][j] = Math.min(100, heatGrid[i][j] + temp * falloff);
+                    }
+                }
+            }
+        }
+
+        function resetDemo() {
+            initGrid();
+        }
+
+        function addRandomHeat() {
+            const x = Math.floor(Math.random() * gridSize);
+            const y = Math.floor(Math.random() * gridSize);
+            const temp = 50 + Math.random() * 50;
+            addHeatSource(x, y, temp);
+        }
+
+        function togglePause() {
+            isPaused = !isPaused;
+            document.getElementById('pauseText').textContent = isPaused ? 'Resume' : 'Pause';
+        }
+
+        function temperatureToColor(temp) {
+            const t = Math.max(0, Math.min(100, temp)) / 100;
+            let r, g, b;
+
+            if (t < 0.5) {
+                b = 255;
+                g = Math.floor(t * 2 * 255);
+                r = 0;
+            } else {
+                b = Math.floor((1 - (t - 0.5) * 2) * 255);
+                g = Math.floor((1 - (t - 0.5) * 2) * 255);
+                r = 255;
+            }
+
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+
+        function updateSimulation() {
+            if (isPaused) return;
+
+            const newGrid = heatGrid.map(row => [...row]);
+
+            // Heat diffusion
+            for (let i = 1; i < gridSize - 1; i++) {
+                for (let j = 1; j < gridSize - 1; j++) {
+                    const neighbors = (
+                        heatGrid[i - 1][j] +
+                        heatGrid[i + 1][j] +
+                        heatGrid[i][j - 1] +
+                        heatGrid[i][j + 1]
+                    ) / 4;
+
+                    const diffusion = (neighbors - heatGrid[i][j]) * diffusionRate;
+                    const cooling = (heatGrid[i][j] - 20) * coolingRate;
+
+                    newGrid[i][j] = heatGrid[i][j] + diffusion - cooling;
+                    newGrid[i][j] = Math.max(0, Math.min(100, newGrid[i][j]));
+                }
+            }
+
+            heatGrid = newGrid;
+        }
+
+        function render() {
+            const cellWidth = canvas.width / gridSize;
+            const cellHeight = canvas.height / gridSize;
+
+            for (let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize; j++) {
+                    ctx.fillStyle = temperatureToColor(heatGrid[i][j]);
+                    ctx.fillRect(i * cellWidth, j * cellHeight, cellWidth, cellHeight);
+                }
+            }
+
+            // Add subtle grid lines
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= gridSize; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * cellWidth, 0);
+                ctx.lineTo(i * cellWidth, canvas.height);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(0, i * cellHeight);
+                ctx.lineTo(canvas.width, i * cellHeight);
+                ctx.stroke();
+            }
+        }
+
+        function animate() {
+            updateSimulation();
+            render();
+            requestAnimationFrame(animate);
+        }
+
+        // Add some initial heat sources
+        addHeatSource(30, 30, 80);
+        addHeatSource(15, 45, 60);
+        addHeatSource(45, 15, 70);
+
+        animate();
+    </script>
+</body>
+</html>
