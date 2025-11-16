@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THRML: Spin Models Implementation</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 1200px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+
+        .panel {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #333;
+            font-size: 13px;
+        }
+
+        select, input[type="range"], input[type="number"] {
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        input[type="range"] {
+            padding: 0;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        canvas {
+            border: 2px solid #eee;
+            border-radius: 10px;
+            display: block;
+            width: 100%;
+            background: white;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .info-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .info-box ul {
+            margin-left: 20px;
+            color: #555;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .color-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid #333;
+        }
+
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .log {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .log-entry {
+            margin: 3px 0;
+        }
+
+        .log-info { color: #4ec9b0; }
+        .log-warn { color: #ce9178; }
+        .log-success { color: #6a9955; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>THRML: Spin Models in Probabilistic Computing</h1>
+            <div class="subtitle">
+                Browser implementation of <a href="https://github.com/extropic-ai/thrml/blob/main/examples/02_spin_models.ipynb" target="_blank">THRML Spin Models Example</a>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="panel">
+                <h2>Model Configuration</h2>
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Graph Topology</label>
+                        <select id="topology">
+                            <option value="grid">2D Grid</option>
+                            <option value="ring">Ring</option>
+                            <option value="random">Random Graph</option>
+                            <option value="complete">Complete Graph</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Graph Size: <span id="sizeLabel">10</span></label>
+                        <input type="range" id="size" min="5" max="30" value="10">
+                    </div>
+                    <div class="control-group">
+                        <label>Inverse Temperature (β): <span id="betaLabel">1.0</span></label>
+                        <input type="range" id="beta" min="0.1" max="5.0" step="0.1" value="1.0">
+                    </div>
+                    <div class="control-group">
+                        <label>Random Edges (for Random Graph): <span id="edgeProbLabel">0.3</span></label>
+                        <input type="range" id="edgeProb" min="0.1" max="0.9" step="0.05" value="0.3">
+                    </div>
+                </div>
+
+                <div class="buttons">
+                    <button onclick="initializeModel()">Initialize Model</button>
+                    <button onclick="startSampling()" id="sampleBtn">Start Sampling</button>
+                    <button onclick="resetSampling()">Reset</button>
+                </div>
+
+                <div class="info-box">
+                    <h3>Sampling Schedule</h3>
+                    <ul>
+                        <li><strong>Warmup:</strong> <input type="number" id="warmup" value="50" style="width: 80px"> steps</li>
+                        <li><strong>Samples:</strong> <input type="number" id="nSamples" value="100" style="width: 80px"></li>
+                        <li><strong>Thinning:</strong> <input type="number" id="thinning" value="5" style="width: 80px"> (keep every nth)</li>
+                    </ul>
+                </div>
+
+                <div class="info-box">
+                    <h3>Graph Coloring for Parallel Sampling</h3>
+                    <p style="color: #555; font-size: 13px; margin-bottom: 10px;">
+                        Nodes with the same color have no edges between them and can be updated in parallel.
+                        This is the key optimization that makes Gibbs sampling hardware-efficient!
+                    </p>
+                    <div id="colorLegend" class="color-legend"></div>
+                </div>
+
+                <div class="stats">
+                    <div class="stat-box">
+                        <div class="stat-label">Nodes</div>
+                        <div class="stat-value" id="nNodes">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Edges</div>
+                        <div class="stat-value" id="nEdges">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Colors</div>
+                        <div class="stat-value" id="nColors">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Sampling Step</div>
+                        <div class="stat-value" id="step">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>Graph Topology</h2>
+                <canvas id="graphCanvas" width="600" height="600"></canvas>
+            </div>
+
+            <div class="panel">
+                <h2>Energy Evolution</h2>
+                <canvas id="energyCanvas" width="600" height="300"></canvas>
+
+                <div class="stats">
+                    <div class="stat-box">
+                        <div class="stat-label">Current Energy</div>
+                        <div class="stat-value" id="energy">0.00</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Avg Energy</div>
+                        <div class="stat-value" id="avgEnergy">0.00</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Magnetization</div>
+                        <div class="stat-value" id="mag">0.00</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Sample Count</div>
+                        <div class="stat-value" id="sampleCount">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>Sampling Log</h2>
+                <div id="log" class="log">
+                    <div class="log-entry log-info">Ready to initialize model...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel full-width">
+            <h2>About THRML Spin Models</h2>
+            <div style="columns: 2; column-gap: 30px; font-size: 14px; line-height: 1.6; color: #555;">
+                <p style="margin-bottom: 15px;">
+                    <strong>Energy-Based Models:</strong> The probability of a configuration is P(x) ∝ exp(-βE(x)),
+                    where E(x) is the energy function. Lower energy states are more probable.
+                </p>
+                <p style="margin-bottom: 15px;">
+                    <strong>Ising Model:</strong> Binary spins {-1, +1} with energy E(x) = -Σ bias_i·x_i - Σ weight_ij·x_i·x_j.
+                    This is the simplest spin model with first and second-order interactions.
+                </p>
+                <p style="margin-bottom: 15px;">
+                    <strong>Gibbs Sampling:</strong> Each spin is updated based on its local field (influence from neighbors).
+                    The update only requires computing neighbor states and generating a biased random bit - very hardware-friendly!
+                </p>
+                <p style="margin-bottom: 15px;">
+                    <strong>Graph Coloring:</strong> By coloring the graph, we identify sets of nodes with no connections
+                    between them. All nodes of the same color can be updated simultaneously, enabling parallel hardware implementation.
+                </p>
+                <p style="margin-bottom: 15px;">
+                    <strong>Sampling Schedule:</strong> Warmup period lets the system reach equilibrium, then we collect
+                    samples with thinning to reduce correlation between successive samples.
+                </p>
+                <p>
+                    <strong>Hardware Efficiency:</strong> This algorithm maps naturally to probabilistic hardware like
+                    stochastic magnetic tunnel junctions (sMTJs) or other physics-based random bit generators.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Graph coloring colors
+        const COLORS = [
+            '#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6',
+            '#1abc9c', '#e67e22', '#34495e', '#16a085', '#c0392b',
+            '#27ae60', '#2980b9', '#8e44ad', '#f1c40f', '#d35400'
+        ];
+
+        class Graph {
+            constructor() {
+                this.nodes = [];
+                this.edges = [];
+                this.adjacency = new Map();
+            }
+
+            addNode(id, x, y) {
+                this.nodes.push({ id, x, y, spin: 1, color: 0 });
+                this.adjacency.set(id, []);
+            }
+
+            addEdge(i, j) {
+                if (i !== j && !this.hasEdge(i, j)) {
+                    this.edges.push([i, j]);
+                    this.adjacency.get(i).push(j);
+                    this.adjacency.get(j).push(i);
+                }
+            }
+
+            hasEdge(i, j) {
+                return this.adjacency.get(i).includes(j);
+            }
+
+            neighbors(i) {
+                return this.adjacency.get(i);
+            }
+
+            // Greedy graph coloring (DSATUR algorithm approximation)
+            colorGraph() {
+                const n = this.nodes.length;
+                const colors = new Array(n).fill(-1);
+
+                // Color first node with color 0
+                colors[0] = 0;
+
+                // Color remaining nodes
+                for (let i = 1; i < n; i++) {
+                    // Find colors used by neighbors
+                    const neighborColors = new Set();
+                    for (const neighbor of this.neighbors(i)) {
+                        if (colors[neighbor] !== -1) {
+                            neighborColors.add(colors[neighbor]);
+                        }
+                    }
+
+                    // Find first available color
+                    let color = 0;
+                    while (neighborColors.has(color)) {
+                        color++;
+                    }
+                    colors[i] = color;
+                }
+
+                // Assign colors to nodes
+                this.nodes.forEach((node, i) => {
+                    node.color = colors[i];
+                });
+
+                return Math.max(...colors) + 1;
+            }
+
+            // Group nodes by color for parallel updates
+            getColorBlocks() {
+                const nColors = Math.max(...this.nodes.map(n => n.color)) + 1;
+                const blocks = Array(nColors).fill(null).map(() => []);
+
+                this.nodes.forEach((node, i) => {
+                    blocks[node.color].push(i);
+                });
+
+                return blocks;
+            }
+        }
+
+        function createGridGraph(rows, cols) {
+            const graph = new Graph();
+
+            // Add nodes
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    const id = i * cols + j;
+                    const x = (j + 1) / (cols + 1);
+                    const y = (i + 1) / (rows + 1);
+                    graph.addNode(id, x, y);
+                }
+            }
+
+            // Add edges
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    const id = i * cols + j;
+                    // Right edge
+                    if (j < cols - 1) graph.addEdge(id, id + 1);
+                    // Down edge
+                    if (i < rows - 1) graph.addEdge(id, id + cols);
+                }
+            }
+
+            return graph;
+        }
+
+        function createRingGraph(n) {
+            const graph = new Graph();
+
+            // Arrange in circle
+            for (let i = 0; i < n; i++) {
+                const angle = (2 * Math.PI * i) / n;
+                const x = 0.5 + 0.35 * Math.cos(angle);
+                const y = 0.5 + 0.35 * Math.sin(angle);
+                graph.addNode(i, x, y);
+                if (i > 0) graph.addEdge(i - 1, i);
+            }
+            graph.addEdge(n - 1, 0); // Close the ring
+
+            return graph;
+        }
+
+        function createRandomGraph(n, p) {
+            const graph = new Graph();
+
+            // Random positions
+            for (let i = 0; i < n; i++) {
+                const x = 0.1 + Math.random() * 0.8;
+                const y = 0.1 + Math.random() * 0.8;
+                graph.addNode(i, x, y);
+            }
+
+            // Random edges
+            for (let i = 0; i < n; i++) {
+                for (let j = i + 1; j < n; j++) {
+                    if (Math.random() < p) {
+                        graph.addEdge(i, j);
+                    }
+                }
+            }
+
+            return graph;
+        }
+
+        function createCompleteGraph(n) {
+            const graph = new Graph();
+
+            // Arrange in circle
+            for (let i = 0; i < n; i++) {
+                const angle = (2 * Math.PI * i) / n;
+                const x = 0.5 + 0.35 * Math.cos(angle);
+                const y = 0.5 + 0.35 * Math.sin(angle);
+                graph.addNode(i, x, y);
+            }
+
+            // All edges
+            for (let i = 0; i < n; i++) {
+                for (let j = i + 1; j < n; j++) {
+                    graph.addEdge(i, j);
+                }
+            }
+
+            return graph;
+        }
+
+        class IsingModel {
+            constructor(graph, beta = 1.0) {
+                this.graph = graph;
+                this.beta = beta;
+
+                // Initialize random parameters
+                const n = graph.nodes.length;
+                this.biases = Array(n).fill(0).map(() => (Math.random() - 0.5) * 0.5);
+                this.weights = Array(graph.edges.length).fill(0).map(() => (Math.random() - 0.5) * 0.5);
+
+                // Random initial state
+                this.randomizeState();
+
+                this.energyHistory = [];
+                this.samples = [];
+            }
+
+            randomizeState() {
+                this.graph.nodes.forEach(node => {
+                    node.spin = Math.random() > 0.5 ? 1 : -1;
+                });
+            }
+
+            energy() {
+                let e = 0;
+
+                // Bias term
+                this.graph.nodes.forEach((node, i) => {
+                    e -= this.biases[i] * node.spin;
+                });
+
+                // Interaction term
+                this.graph.edges.forEach((edge, k) => {
+                    const [i, j] = edge;
+                    e -= this.weights[k] * this.graph.nodes[i].spin * this.graph.nodes[j].spin;
+                });
+
+                return e;
+            }
+
+            localField(nodeIdx) {
+                let field = this.biases[nodeIdx];
+
+                const neighbors = this.graph.neighbors(nodeIdx);
+                this.graph.edges.forEach((edge, k) => {
+                    const [i, j] = edge;
+                    if (i === nodeIdx && neighbors.includes(j)) {
+                        field += this.weights[k] * this.graph.nodes[j].spin;
+                    } else if (j === nodeIdx && neighbors.includes(i)) {
+                        field += this.weights[k] * this.graph.nodes[i].spin;
+                    }
+                });
+
+                return field;
+            }
+
+            // Update a single node
+            updateNode(nodeIdx) {
+                const h = this.localField(nodeIdx);
+                const probUp = 1.0 / (1.0 + Math.exp(-2 * this.beta * h));
+                this.graph.nodes[nodeIdx].spin = Math.random() < probUp ? 1 : -1;
+            }
+
+            // Parallel Gibbs step using graph coloring
+            parallelGibbsStep(colorBlocks) {
+                // Update each color block in sequence
+                // Within each block, all nodes can be updated in parallel
+                for (const block of colorBlocks) {
+                    for (const nodeIdx of block) {
+                        this.updateNode(nodeIdx);
+                    }
+                }
+            }
+
+            magnetization() {
+                const sum = this.graph.nodes.reduce((acc, node) => acc + node.spin, 0);
+                return sum / this.graph.nodes.length;
+            }
+
+            collectSample() {
+                const state = this.graph.nodes.map(n => n.spin);
+                this.samples.push({
+                    state: state,
+                    energy: this.energy(),
+                    magnetization: this.magnetization()
+                });
+            }
+        }
+
+        // Global state
+        let graph = null;
+        let model = null;
+        let colorBlocks = null;
+        let isRunning = false;
+        let samplingStep = 0;
+        let warmupSteps = 50;
+        let nSamples = 100;
+        let thinning = 5;
+        let animationId = null;
+
+        // Canvas contexts
+        const graphCanvas = document.getElementById('graphCanvas');
+        const graphCtx = graphCanvas.getContext('2d');
+        const energyCanvas = document.getElementById('energyCanvas');
+        const energyCtx = energyCanvas.getContext('2d');
+
+        // Update controls
+        document.getElementById('size').oninput = (e) => {
+            document.getElementById('sizeLabel').textContent = e.target.value;
+        };
+        document.getElementById('beta').oninput = (e) => {
+            const val = parseFloat(e.target.value);
+            document.getElementById('betaLabel').textContent = val.toFixed(1);
+            if (model) model.beta = val;
+        };
+        document.getElementById('edgeProb').oninput = (e) => {
+            const val = parseFloat(e.target.value);
+            document.getElementById('edgeProbLabel').textContent = val.toFixed(2);
+        };
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function initializeModel() {
+            const topology = document.getElementById('topology').value;
+            const size = parseInt(document.getElementById('size').value);
+            const edgeProb = parseFloat(document.getElementById('edgeProb').value);
+            const beta = parseFloat(document.getElementById('beta').value);
+
+            log('Initializing model...', 'info');
+
+            // Create graph based on topology
+            if (topology === 'grid') {
+                const dim = Math.floor(Math.sqrt(size));
+                graph = createGridGraph(dim, dim);
+                log(`Created ${dim}×${dim} grid graph`, 'success');
+            } else if (topology === 'ring') {
+                graph = createRingGraph(size);
+                log(`Created ring graph with ${size} nodes`, 'success');
+            } else if (topology === 'random') {
+                graph = createRandomGraph(size, edgeProb);
+                log(`Created random graph with ${size} nodes, p=${edgeProb}`, 'success');
+            } else if (topology === 'complete') {
+                graph = createCompleteGraph(size);
+                log(`Created complete graph with ${size} nodes`, 'success');
+            }
+
+            // Color the graph
+            const nColors = graph.colorGraph();
+            colorBlocks = graph.getColorBlocks();
+            log(`Graph colored with ${nColors} colors using greedy algorithm`, 'success');
+
+            // Create Ising model
+            model = new IsingModel(graph, beta);
+            log(`Initialized Ising model with β=${beta}`, 'success');
+
+            // Update stats
+            document.getElementById('nNodes').textContent = graph.nodes.length;
+            document.getElementById('nEdges').textContent = graph.edges.length;
+            document.getElementById('nColors').textContent = nColors;
+
+            // Update color legend
+            updateColorLegend(nColors);
+
+            // Reset sampling
+            samplingStep = 0;
+            document.getElementById('step').textContent = '0';
+            document.getElementById('sampleCount').textContent = '0';
+            model.energyHistory = [];
+            model.samples = [];
+
+            // Draw
+            drawGraph();
+            drawEnergy();
+            updateStats();
+
+            log('Model ready for sampling', 'success');
+        }
+
+        function updateColorLegend(nColors) {
+            const legend = document.getElementById('colorLegend');
+            legend.innerHTML = '';
+
+            for (let i = 0; i < nColors; i++) {
+                const item = document.createElement('div');
+                item.className = 'legend-item';
+
+                const color = document.createElement('div');
+                color.className = 'legend-color';
+                color.style.backgroundColor = COLORS[i % COLORS.length];
+
+                const label = document.createElement('span');
+                label.textContent = `Block ${i} (${colorBlocks[i].length} nodes)`;
+                label.style.fontSize = '12px';
+
+                item.appendChild(color);
+                item.appendChild(label);
+                legend.appendChild(item);
+            }
+        }
+
+        function startSampling() {
+            if (!model) {
+                log('Please initialize model first!', 'warn');
+                return;
+            }
+
+            if (isRunning) {
+                isRunning = false;
+                document.getElementById('sampleBtn').textContent = 'Resume Sampling';
+                if (animationId) cancelAnimationFrame(animationId);
+                log('Sampling paused', 'info');
+            } else {
+                isRunning = true;
+                document.getElementById('sampleBtn').textContent = 'Pause Sampling';
+
+                warmupSteps = parseInt(document.getElementById('warmup').value);
+                nSamples = parseInt(document.getElementById('nSamples').value);
+                thinning = parseInt(document.getElementById('thinning').value);
+
+                log(`Starting sampling: warmup=${warmupSteps}, samples=${nSamples}, thinning=${thinning}`, 'info');
+
+                runSamplingStep();
+            }
+        }
+
+        function resetSampling() {
+            isRunning = false;
+            if (animationId) cancelAnimationFrame(animationId);
+            document.getElementById('sampleBtn').textContent = 'Start Sampling';
+
+            if (model) {
+                samplingStep = 0;
+                model.randomizeState();
+                model.energyHistory = [];
+                model.samples = [];
+                document.getElementById('step').textContent = '0';
+                document.getElementById('sampleCount').textContent = '0';
+                drawGraph();
+                drawEnergy();
+                updateStats();
+                log('Sampling reset', 'info');
+            }
+        }
+
+        function runSamplingStep() {
+            if (!isRunning) return;
+
+            // Perform parallel Gibbs step
+            model.parallelGibbsStep(colorBlocks);
+            samplingStep++;
+
+            // Track energy
+            const energy = model.energy();
+            model.energyHistory.push(energy);
+
+            // Collect samples after warmup
+            if (samplingStep > warmupSteps && (samplingStep - warmupSteps) % thinning === 0) {
+                model.collectSample();
+
+                if (model.samples.length >= nSamples) {
+                    isRunning = false;
+                    document.getElementById('sampleBtn').textContent = 'Start Sampling';
+                    log(`Sampling complete! Collected ${model.samples.length} samples`, 'success');
+
+                    // Compute statistics
+                    const avgE = model.samples.reduce((acc, s) => acc + s.energy, 0) / model.samples.length;
+                    const avgM = model.samples.reduce((acc, s) => acc + Math.abs(s.magnetization), 0) / model.samples.length;
+                    log(`Average energy: ${avgE.toFixed(3)}, Average |magnetization|: ${avgM.toFixed(3)}`, 'success');
+
+                    return;
+                }
+            }
+
+            // Update display every few steps
+            if (samplingStep % 2 === 0) {
+                drawGraph();
+                drawEnergy();
+                updateStats();
+            }
+
+            // Continue animation
+            animationId = requestAnimationFrame(runSamplingStep);
+        }
+
+        function updateStats() {
+            if (!model) return;
+
+            document.getElementById('step').textContent = samplingStep;
+            document.getElementById('sampleCount').textContent = model.samples.length;
+            document.getElementById('energy').textContent = model.energy().toFixed(2);
+            document.getElementById('mag').textContent = model.magnetization().toFixed(3);
+
+            if (model.energyHistory.length > 0) {
+                const recent = model.energyHistory.slice(-50);
+                const avg = recent.reduce((a, b) => a + b, 0) / recent.length;
+                document.getElementById('avgEnergy').textContent = avg.toFixed(2);
+            }
+        }
+
+        function drawGraph() {
+            if (!graph) return;
+
+            const canvas = graphCanvas;
+            const ctx = graphCtx;
+            const w = canvas.width;
+            const h = canvas.height;
+
+            ctx.clearRect(0, 0, w, h);
+
+            // Draw edges
+            ctx.strokeStyle = '#ddd';
+            ctx.lineWidth = 1;
+            graph.edges.forEach(([i, j]) => {
+                const ni = graph.nodes[i];
+                const nj = graph.nodes[j];
+                ctx.beginPath();
+                ctx.moveTo(ni.x * w, ni.y * h);
+                ctx.lineTo(nj.x * w, nj.y * h);
+                ctx.stroke();
+            });
+
+            // Draw nodes
+            graph.nodes.forEach(node => {
+                const x = node.x * w;
+                const y = node.y * h;
+                const radius = 8;
+
+                // Node color based on graph coloring
+                ctx.fillStyle = COLORS[node.color % COLORS.length];
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, 2 * Math.PI);
+                ctx.fill();
+
+                // Border based on spin
+                ctx.strokeStyle = node.spin === 1 ? '#c0392b' : '#2980b9';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                // Spin value
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 10px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(node.spin > 0 ? '+' : '-', x, y);
+            });
+        }
+
+        function drawEnergy() {
+            if (!model || model.energyHistory.length === 0) {
+                energyCtx.clearRect(0, 0, energyCanvas.width, energyCanvas.height);
+                return;
+            }
+
+            const canvas = energyCanvas;
+            const ctx = energyCtx;
+            const w = canvas.width;
+            const h = canvas.height;
+            const padding = 40;
+
+            ctx.clearRect(0, 0, w, h);
+
+            const history = model.energyHistory;
+            const maxLen = 500;
+            const data = history.slice(-maxLen);
+
+            if (data.length < 2) return;
+
+            const minE = Math.min(...data);
+            const maxE = Math.max(...data);
+            const range = maxE - minE || 1;
+
+            // Axes
+            ctx.strokeStyle = '#ddd';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, h - padding);
+            ctx.lineTo(w - padding, h - padding);
+            ctx.stroke();
+
+            // Labels
+            ctx.fillStyle = '#666';
+            ctx.font = '12px sans-serif';
+            ctx.textAlign = 'right';
+            ctx.fillText(maxE.toFixed(1), padding - 5, padding);
+            ctx.fillText(minE.toFixed(1), padding - 5, h - padding);
+
+            // Warmup indicator
+            if (samplingStep <= warmupSteps) {
+                const x = padding + (samplingStep / maxLen) * (w - 2 * padding);
+                ctx.fillStyle = 'rgba(231, 76, 60, 0.1)';
+                ctx.fillRect(padding, padding, x - padding, h - 2 * padding);
+                ctx.fillStyle = '#e74c3c';
+                ctx.font = '10px sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText('Warmup', padding + 5, padding + 15);
+            }
+
+            // Energy line
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+
+            data.forEach((e, i) => {
+                const x = padding + (i / maxLen) * (w - 2 * padding);
+                const y = h - padding - ((e - minE) / range) * (h - 2 * padding);
+
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+
+            ctx.stroke();
+        }
+
+        // Initialize on load
+        log('THRML Spin Models browser implementation ready', 'success');
+        log('Select a graph topology and click "Initialize Model" to begin', 'info');
+    </script>
+</body>
+</html>
